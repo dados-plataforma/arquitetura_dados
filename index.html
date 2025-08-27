@@ -2,11 +2,106 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="refresh" content="0; url=Insider_macro.drawio.html" />
-    <title>Redirecionando para Diagrama</title>
+    <title>Acesso restrito</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+      .wrap { display:flex; align-items:center; justify-content:center; height:100%; background:#0b1220; color:#e6edf3; }
+      .card { width: min(420px, 92vw); background:#111827; padding:24px; border-radius:16px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+      h1 { margin:0 0 12px; font-size:1.1rem; }
+      p { margin:0 0 16px; color:#b6c2cf; font-size:.95rem; }
+      label { font-size:.9rem; color:#cfe1f8; display:block; margin:0 0 6px; }
+      input[type="password"] { width:100%; padding:10px 12px; border-radius:10px; border:1px solid #324156; background:#0f172a; color:#e6edf3; outline:none; }
+      input[type="password"]:focus { border-color:#5676ff; }
+      button { margin-top:12px; width:100%; padding:10px 14px; border:0; border-radius:10px; background:#4f46e5; color:white; font-weight:600; cursor:pointer; }
+      button:disabled { opacity:.5; cursor:not-allowed; }
+      .msg { margin-top:10px; font-size:.9rem; min-height:1.2em; }
+      .hint { margin-top:10px; font-size:.8rem; color:#8aa1b5; }
+      noscript { display:block; margin:20px; color:#e11d48; }
+    </style>
   </head>
   <body>
-    Se você não for redirecionado automaticamente,
-    <a href="Insider_macro.drawio.html">clique aqui</a>.
+    <noscript>Ative o JavaScript para acessar o diagrama.</noscript>
+
+    <div class="wrap">
+      <div class="card" id="gate">
+        <h1>Área restrita</h1>
+        <p>Informe a senha para visualizar a arquitetura.</p>
+
+        <label for="pw">Senha</label>
+        <input id="pw" type="password" inputmode="text" autocomplete="off" placeholder="••••••••" />
+        <button id="enter">Entrar</button>
+
+        <div class="msg" id="msg"></div>
+        <div class="hint" id="hint"></div>
+      </div>
+    </div>
+
+    <script>
+      // ========= CONFIG =========
+      // Opção simples (texto plano): troque aqui a senha padrão
+      const SIMPLE_PASSWORD = "americanas-insider";
+
+      // Destino autorizado após liberar
+      const DEST = "Insider_macro.drawio.html";
+
+      // Tentativas máximas
+      const MAX_TRIES = 5;
+
+      // ========= LÓGICA =========
+      const gate = document.getElementById("gate");
+      const pw   = document.getElementById("pw");
+      const btn  = document.getElementById("enter");
+      const msg  = document.getElementById("msg");
+      const hint = document.getElementById("hint");
+
+      // Se já desbloqueado nesta aba, redireciona direto
+      if (sessionStorage.getItem("insider_arch_ok") === "1") {
+        window.location.replace(DEST);
+      }
+
+      let tries = 0;
+
+      function fail(message) {
+        msg.textContent = message || "Senha incorreta.";
+        tries++;
+        if (tries >= MAX_TRIES) {
+          btn.disabled = true;
+          pw.disabled = true;
+          hint.textContent = "Limite atingido. Recarregue a página para tentar novamente.";
+        } else {
+          hint.textContent = `Tentativas restantes: ${MAX_TRIES - tries}`;
+          pw.value = "";
+          pw.focus();
+        }
+      }
+
+      function ok() {
+        sessionStorage.setItem("insider_arch_ok", "1");
+        msg.textContent = "Acesso liberado. Redirecionando…";
+        // Redireciona após pequeno delay para mostrar a mensagem
+        setTimeout(() => window.location.replace(DEST), 200);
+      }
+
+      async function checkAndEnter() {
+        const value = pw.value || "";
+        if (!value) return fail("Informe a senha.");
+
+        // Verificação simples (texto plano)
+        if (value === SIMPLE_PASSWORD) {
+          return ok();
+        }
+
+        return fail();
+      }
+
+      btn.addEventListener("click", checkAndEnter);
+      pw.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") checkAndEnter();
+      });
+
+      // Dica leve para usuários “internos”
+      hint.textContent = `Dica: utilize a senha padrão combinada no time.`;
+    </script>
   </body>
 </html>
