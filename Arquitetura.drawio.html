@@ -6,10 +6,10 @@
 <meta charset="utf-8"/>
 <script>
     try {
-      // use sessionStorage se o index usar sessionStorage (ou troque por localStorage nos dois)
+      
       const ok = sessionStorage.getItem("insider_arch_ok") === "1";
       if (!ok) {
-        // volta para a pasta (carrega o index.html)
+      
         window.location.replace("./"); // ou "index.html"
       }
     } catch (e) {
